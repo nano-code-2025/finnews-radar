@@ -1,0 +1,34 @@
+# ══════════════════════════════════════════════════════════════════
+# FinNews Twitter Accounts Configuration — Example Template
+# ══════════════════════════════════════════════════════════════════
+#
+# Copy this file to twitter_accounts.yaml and fill in your own accounts.
+#
+# Structure: group_name → interval_minutes + accounts list
+# Format:    - handle: weight    (weight 1.0-10.0)
+#
+# Groups are auto-discovered by collector.py and twitter_pipeline.py.
+# No Python code changes needed when adding/removing accounts or groups.
+#
+# ══════════════════════════════════════════════════════════════════
+
+# Example Group 1: Market Data & Volatility
+market_data:
+  interval_minutes: 20
+  accounts:
+    - example_analyst: 9.0       # Replace with real handle
+    - example_data_provider: 8.5
+
+# Example Group 2: Risk Monitoring
+risk_monitoring:
+  interval_minutes: 30
+  accounts:
+    - example_security: 10.0
+    - example_onchain: 9.5
+
+# Example Group 3: Macro & Narrative
+macro_narrative:
+  interval_minutes: 120
+  accounts:
+    - example_macro: 8.5
+    - example_news: 8.0

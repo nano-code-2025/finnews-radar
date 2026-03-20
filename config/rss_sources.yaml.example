@@ -1,0 +1,34 @@
+# ══════════════════════════════════════════════════════════════════
+# FinNews RSS Sources Configuration — Example Template
+# ══════════════════════════════════════════════════════════════════
+#
+# Copy this file to rss_sources.yaml and customize your RSS feeds.
+#
+# Structure: group_name → list of {name, url, category, desc(optional)}
+#
+# ══════════════════════════════════════════════════════════════════
+
+# Module A: Policy & Macro News
+policy:
+  - name: Federal Reserve
+    url: https://www.federalreserve.gov/feeds/press_all.xml
+    category: FED_POLICY
+  - name: SEC Press
+    url: https://www.sec.gov/news/pressreleases.rss
+    category: REGULATION
+
+# Module B: Crypto Industry News
+crypto:
+  - name: CoinDesk
+    url: https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml
+    category: CRYPTO_NEWS
+  - name: Cointelegraph
+    url: https://cointelegraph.com/rss
+    category: CRYPTO_NEWS
+
+# Add more groups as needed:
+# macro_policy:
+#   - name: Your Source
+#     url: https://example.com/feed
+#     category: YOUR_CATEGORY
+#     desc: Optional description

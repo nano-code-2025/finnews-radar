@@ -1,0 +1,110 @@
+# ══════════════════════════════════════════════════════════════════
+# FinNews Keywords Configuration — Example Template
+# ══════════════════════════════════════════════════════════════════
+#
+# Copy this file to keywords.yaml and customize your keyword lists.
+#
+# Structure:
+#   topics              — Enum of all topic categories
+#   tier1_topic_mapping — Tier1 event category → topic mapping
+#   tier2_topic_mapping — Tier2 topic category → topic mapping
+#   shill_blacklist     — Spam/scam words, matched → skip (highest priority)
+#   tier1_event_keywords — High-impact event words, matched → tag only
+#   tier2_topic_keywords — Topic words, matched → pass through Sourcing
+#   rss_keywords         — RSS filter words, matched → pass through RSS Sourcing
+#
+# ══════════════════════════════════════════════════════════════════
+
+# Topic enum — used by feature_extractor and LLM prompts
+topics: [regulation, security, etf, macro, defi, market, exchange,
+         geopolitical, memecoin, mining, liquidity, deleveraging, other]
+
+# Tier 1 event → topic mapping
+tier1_topic_mapping:
+  security: security
+  regulatory: regulation
+  etf: etf
+  macro_event: macro
+  whale: market
+  institutional: etf
+  exchange: exchange
+  geopolitical: geopolitical
+  money_flow: liquidity
+
+# Tier 2 topic → topic mapping
+tier2_topic_mapping:
+  crypto: market
+  macro: macro
+  sentiment: market
+
+# ═══════════════════════════════════════════════
+# Shill Blacklist — matched → skip
+# ═══════════════════════════════════════════════
+shill_blacklist:
+  - airdrop
+  - claim now
+  - giveaway
+  - free mint
+  # Add your own spam/scam terms...
+
+# ═══════════════════════════════════════════════
+# Tier 1: High-Impact Event Keywords (tag only, no filter)
+# ═══════════════════════════════════════════════
+tier1_event_keywords:
+  security:
+    - hack
+    - exploit
+    - vulnerability
+    # Add security-related keywords...
+  regulatory:
+    - SEC
+    - regulation
+    - compliance
+    # Add regulatory keywords...
+  etf:
+    - ETF
+    - spot ETF
+    # Add ETF-related keywords...
+  macro_event:
+    - FOMC
+    - rate decision
+    - CPI
+    # Add macro event keywords...
+
+# ═══════════════════════════════════════════════
+# Tier 2: Topic Keywords (must match to pass Sourcing)
+# ═══════════════════════════════════════════════
+tier2_topic_keywords:
+  crypto:
+    - bitcoin
+    - ethereum
+    - BTC
+    - ETH
+    # Add crypto keywords...
+  macro:
+    - inflation
+    - GDP
+    - unemployment
+    # Add macro keywords...
+  sentiment:
+    - bullish
+    - bearish
+    - fear
+    # Add sentiment keywords...
+
+# ═══════════════════════════════════════════════
+# RSS Keywords (must match to pass RSS Sourcing)
+# ═══════════════════════════════════════════════
+rss_keywords:
+  macro:
+    - Federal Reserve
+    - interest rate
+    # Add macro RSS keywords...
+  regulation:
+    - SEC
+    - CFTC
+    # Add regulation RSS keywords...
+  crypto:
+    - bitcoin
+    - ethereum
+    # Add crypto RSS keywords...
