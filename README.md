@@ -1,221 +1,231 @@
-# FinNews
+# FinNews Radar
 
-Financial news collection, sentiment analysis, and intelligent push notification system.
+> Real-time financial news intelligence — collect, analyze, and push actionable insights to Telegram.
 
-Tech stack: Python 3.11+, SQLite, Telegram Bot, Grok xAI API, VADER, FinBERT
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Architecture details: see [ARCHITECTURE.md](ARCHITECTURE.md)
-Future roadmap: see [ROADMAP.md](ROADMAP.md)
+FinNews Radar is an automated pipeline that monitors **Twitter/X KOLs** and **RSS news feeds** for crypto & macro events, runs multi-layer sentiment analysis (VADER + FinBERT + Grok LLM), and delivers filtered, scored alerts via Telegram.
+
+---
+
+## Highlights
+
+- **Dual-source collection** — Twitter (via Grok xAI `x_search`) + 10+ RSS feeds (Fed, SEC, CoinDesk, etc.)
+- **3-stage filtering** — Shill blacklist → keyword sourcing → sentiment ranking, reducing noise by ~70%
+- **Feature extraction** — Rule engine + LLM buffer producing structured features: topic, fear/FOMO scores, rationality index
+- **Tiered Telegram push** — Critical alerts (hacks, regulatory) push immediately; routine news batched
+- **24h daily report** — Automated summary with AI insights, delivered to Telegram on schedule
+- **Config-driven** — Add/remove Twitter accounts, RSS sources, or keywords via YAML — zero code changes
 
 ---
 
 ## Quick Start
 
+### 1. Clone & Install
+
 ```bash
-# Setup
+git clone https://github.com/nano-code-2025/finnews-radar.git
+cd finnews-radar
+
 python -m venv venv
 venv\Scripts\activate          # Windows
-pip install -r requirements.txt
+# source venv/bin/activate     # macOS/Linux
 
-# Environment
-cp .env.example .env           # Fill in API keys
+pip install -r requirements.txt
 ```
 
-Required `.env` keys:
-- `XAI_API_KEY` — Grok xAI API (Twitter collection + LLM)
-- `TELEGRAM_BOT_TOKEN` — Telegram bot token
-- `TELEGRAM_CHAT_ID` — Telegram chat ID
-- `TELEGRAM_DAILY_CHAT_ID` — (optional) dedicated chat ID for 24h daily report (fallback to `TELEGRAM_CHAT_ID`)
-- `DAILY_REPORT_USER_NAME` — (optional) name used in daily report greeting
-- `TWITTER_TWEETS_PER_ACCOUNT` — (optional) tweets per account (default: 2)
-- `TWITTER_LOOKBACK_DAYS` — (optional) lookback days for x_search (default: 3)
-- `TWITTER_MAX_CONCURRENT_REQUESTS` — (optional) max parallel requests (default: 5)
+### 2. Configure
+
+```bash
+cp .env.example .env
+cp config/keywords.yaml.example config/keywords.yaml
+cp config/twitter_accounts.yaml.example config/twitter_accounts.yaml
+cp config/rss_sources.yaml.example config/rss_sources.yaml
+```
+
+Edit `.env` with your API keys:
+
+| Key | Required | Description |
+|-----|----------|-------------|
+| `XAI_API_KEY` | Yes | Grok xAI API — powers Twitter collection + LLM analysis |
+| `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token ([BotFather](https://t.me/BotFather)) |
+| `TELEGRAM_CHAT_ID` | Yes | Target chat/group ID for real-time alerts |
+| `TELEGRAM_DAILY_CHAT_ID` | No | Separate chat for daily reports (defaults to `CHAT_ID`) |
+| `DAILY_REPORT_USER_NAME` | No | Name used in daily report greeting |
+
+### 3. Run
+
+```bash
+# Full pipeline: collect → filter → analyze → push
+python main.py -q
+
+# Dev mode (mock FinBERT to skip 400MB model download)
+python main.py -q --mock
+```
 
 ---
 
-## Common Commands
+## Usage
 
-### Run Pipeline
+### Pipeline Modes
 
 ```bash
-# Full pipeline (collect + filter + push)
-venv\Scripts\python.exe main.py -q --mock    # mock FinBERT (dev)
-venv\Scripts\python.exe main.py -q           # real FinBERT (prod)
-
 # Collect only (no filtering/push)
-venv\Scripts\python.exe scripts/collector.py
-venv\Scripts\python.exe scripts/collector.py --tw-only
-venv\Scripts\python.exe scripts/collector.py --rss-only
+python scripts/collector.py
+python scripts/collector.py --tw-only       # Twitter only
+python scripts/collector.py --rss-only      # RSS only
 ```
 
 ### Daily Report
 
 ```bash
-venv\Scripts\python.exe scripts/daily_report.py                  # full default (print + JSON + CSV + log + Telegram; AI only on anomalies)
-venv\Scripts\python.exe scripts/daily_report.py 2026-02-08       # specific date
-venv\Scripts\python.exe scripts/daily_report.py --no-telegram    # skip Telegram
-venv\Scripts\python.exe scripts/daily_report.py --no-csv         # skip CSV
-venv\Scripts\python.exe scripts/daily_report.py --no-save        # skip JSON + CSV
-venv\Scripts\python.exe scripts/daily_report.py --no-ai          # skip Grok AI insights (even if anomalies)
-venv\Scripts\python.exe scripts/daily_report.py --force-ai       # force Grok AI insights (ignore anomaly gate)
-venv\Scripts\python.exe scripts/daily_report.py --quiet          # no terminal print
+python scripts/daily_report.py              # Full report + Telegram
+python scripts/daily_report.py 2026-02-08   # Specific date
+python scripts/daily_report.py --force-ai   # Force AI insights
+python scripts/daily_report.py --no-telegram # Terminal only
 ```
-Note: default report window is the completed US trading day (ET "yesterday", 00:00–24:00).
 
-### Scheduler
+> Default window: completed US trading day (ET yesterday, 00:00–24:00).
+
+### Scheduler (Automated)
 
 ```bash
-venv\Scripts\python.exe scripts/scheduler.py                     # dev mode (default)
-venv\Scripts\python.exe scripts/scheduler.py --mode prod         # prod mode
-venv\Scripts\python.exe scripts/scheduler.py --interval 15       # change interval (minutes)
-venv\Scripts\python.exe scripts/scheduler.py --report-hour 15    # override report hour (default auto from ET 02:00)
-venv\Scripts\python.exe scripts/scheduler.py --report-minute 0   # override report minute (default 00)
-venv\Scripts\python.exe scripts/scheduler.py --no-report         # disable daily report
-venv\Scripts\python.exe scripts/scheduler.py --list              # show job config
-venv\Scripts\python.exe scripts/scheduler.py --once raw_data     # run a job once
-venv\Scripts\python.exe scripts/scheduler.py --once full_pipeline
+python scripts/scheduler.py                 # Dev mode
+python scripts/scheduler.py --mode prod     # Production: full pipeline + daily report
+python scripts/scheduler.py --interval 15   # Collection every 15 min
+python scripts/scheduler.py --list          # Show job config
 ```
-Note: scheduler auto-maps ET 02:00 to local SGT (DST-aware). Restart the scheduler after DST changes.
 
-**Mode explanation:**
-- `dev` — raw_data + daily_report (collect data while developing downstream code)
-- `prod` — full_pipeline + daily_report (complete automated flow)
-- raw_data and full_pipeline are **mutually exclusive** (full_pipeline already collects)
+| Mode | Jobs | Use Case |
+|------|------|----------|
+| `dev` | `raw_data` + `daily_report` | Collect data while developing |
+| `prod` | `full_pipeline` + `daily_report` | Fully automated flow |
 
-### Database Inspection
+### Inspect Data
 
 ```bash
-# Raw data DBs
-venv\Scripts\python.exe scripts/db_inspect.py
-
-# Features DB
-venv\Scripts\python.exe scripts/features_inspect.py
-venv\Scripts\python.exe scripts/features_inspect.py --topic market
-venv\Scripts\python.exe scripts/features_inspect.py --author zachxbt
-venv\Scripts\python.exe scripts/features_inspect.py --date 2026-02-09
-venv\Scripts\python.exe scripts/features_inspect.py --fear 0.7        # high fear only
-venv\Scripts\python.exe scripts/features_inspect.py --fomo 0.7        # high fomo only
-venv\Scripts\python.exe scripts/features_inspect.py --llm-only        # LLM enhanced only
-venv\Scripts\python.exe scripts/features_inspect.py --csv             # export CSV
-venv\Scripts\python.exe scripts/features_inspect.py --stats           # stats only
-
-# RSS sources check
-venv\Scripts\python.exe scripts/check_rss_sources.py
-
-# Feature data check
-venv\Scripts\python.exe scripts/check_features.py
+python scripts/features_inspect.py              # All features
+python scripts/features_inspect.py --topic market
+python scripts/features_inspect.py --fear 0.7    # High fear only
+python scripts/features_inspect.py --csv         # Export CSV
+python scripts/features_inspect.py --stats       # Stats summary
 ```
 
-### Backfill (after schema upgrade)
+---
 
-```bash
-venv\Scripts\python.exe scripts/backfill_features.py              # rule-only backfill
-venv\Scripts\python.exe scripts/backfill_features.py --llm        # LLM-only backfill
-venv\Scripts\python.exe scripts/backfill_features.py --all        # rule + LLM
-venv\Scripts\python.exe scripts/backfill_features.py --dry-run    # preview only
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    scheduler.py (APScheduler)                │
+│           dev: raw_data    prod: full_pipeline               │
+└───────────────────────┬──────────────────────────────────────┘
+                        │
+              ┌─────────▼──────────┐
+              │      main.py       │
+              │   (orchestrator)   │
+              └─────────┬──────────┘
+                        │
+         ┌──────────────┼──────────────┐
+         ▼              ▼              ▼
+   ┌──────────┐  ┌───────────┐  ┌──────────┐
+   │ Collect   │  │ Analyze   │  │  Push    │
+   │ RSS + TW  │  │ Filter +  │  │ Telegram │
+   │           │  │ Sentiment │  │          │
+   └─────┬────┘  └─────┬─────┘  └──────────┘
+         │              │
+         ▼              ▼
+   ┌─────────────────────────┐
+   │     SQLite (3 DBs)      │
+   │  twitter · rss · features│
+   └─────────────────────────┘
 ```
 
-### Testing & Quality
+**Filtering pipeline** (per source):
 
-```bash
-venv\Scripts\python.exe -m pytest tests/
-venv\Scripts\python.exe -m mypy src/
-venv\Scripts\python.exe -m ruff check src/
-
-# Test Telegram connection
-venv\Scripts\python.exe scripts/test_telegram_pusher.py
-
-# Verify Twitter accounts
-venv\Scripts\python.exe scripts/verify_twitter_accounts.py
 ```
+Raw items → Dedup (SHA256) → Shill blacklist → Keyword sourcing
+         → Sentiment (VADER + FinBERT) → Feature extraction (rule + LLM)
+         → Scoring & ranking → Telegram push
+```
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for full schema and data flow details.
 
 ---
 
 ## Project Structure
 
 ```
-├── main.py                              # Orchestrator: collect → persist → filter → push → mark
-├── ARCHITECTURE.md                      # System architecture (data flow, schemas, design)
-├── README.md                            # This file (operations & maintenance)
-├── CLAUDE.md                            # AI coding guide
+finnews-radar/
+├── main.py                      # Pipeline orchestrator
 ├── config/
-│   ├── keywords.yaml                    # Unified keywords: shill + tier1 + tier2 + rss
-│   ├── twitter_accounts.yaml            # 5 groups, 17 accounts + per-account weight
-│   ├── rss_sources.yaml                 # RSS source URLs + categories
-│   └── prompts.md                       # All LLM maintenance prompts
-├── data/
-│   ├── rss.db                           # RSS raw data
-│   ├── twitter.db                       # Twitter raw data
-│   ├── features.db                      # Feature store (long-term)
-│   └── reports/                         # Daily report JSON + CSV
+│   ├── keywords.yaml.example    # Keyword filters template
+│   ├── twitter_accounts.yaml.example  # KOL watchlist template
+│   ├── rss_sources.yaml.example # RSS feeds template
+│   └── prompts.md               # LLM maintenance prompts
 ├── src/
-│   ├── collectors/
-│   │   ├── base.py                      # NewsItem + BaseCollector
-│   │   ├── rss_collector.py             # RSS (feedparser)
-│   │   └── twitter_collector.py         # Twitter (Grok xAI API)
-│   ├── analyzers/
-│   │   ├── base.py                      # AnalyzedItem + BaseAnalyzer
-│   │   ├── deduplicator.py              # SHA256 dedup
-│   │   ├── rss_filter.py               # RSS Sourcing + Ranking
-│   │   ├── twitter_filter.py            # Twitter Sourcing + Ranking + Sentiment
-│   │   └── feature_extractor.py         # Rule engine + LLM buffer (Grok fast)
-│   ├── pipelines/
-│   │   ├── base.py                      # FilterResult + BasePipeline
-│   │   ├── rss_pipeline.py              # RSS pipeline → rss_features
-│   │   └── twitter_pipeline.py          # Twitter pipeline → post_features
-│   ├── pushers/
-│   │   └── telegram_pusher.py           # Telegram tiered push
-│   ├── report/
-│   │   └── daily_report.py              # 24h report generator
-│   └── utils/
-│       ├── db.py                        # RSSDatabase + TwitterDatabase
-│       ├── features_db.py               # FeaturesDatabase
-│       └── config.py                    # load_keywords / load_accounts / load_config
-├── scripts/
-│   ├── scheduler.py                     # APScheduler unified scheduler (dev/prod)
-│   ├── collector.py                     # Standalone collector (Twitter + RSS → DB)
-│   ├── daily_report.py                  # Daily report CLI
-│   ├── db_inspect.py                    # Raw DB inspection
-│   ├── features_inspect.py              # Features DB inspection + CSV export
-│   ├── backfill_features.py             # Schema upgrade backfill
-│   ├── check_features.py               # Feature data check
-│   ├── check_rss_sources.py            # RSS sources check
-│   ├── verify_twitter_accounts.py       # Twitter account verification
-│   ├── verify_v4.py                     # v4 upgrade verification
-│   ├── test_telegram_pusher.py          # Telegram connection test
-│   └── test_twitter_collector.py        # Twitter collector test
-├── tests/                               # Unit tests
+│   ├── collectors/              # Data collection (RSS + Twitter)
+│   ├── analyzers/               # Filtering, sentiment, feature extraction
+│   ├── pipelines/               # End-to-end processing pipelines
+│   ├── pushers/                 # Notification delivery (Telegram)
+│   ├── report/                  # Daily report generation
+│   └── utils/                   # Config, database, helpers
+├── scripts/                     # CLI tools (scheduler, collector, inspector)
+├── tests/                       # Unit tests
+├── ARCHITECTURE.md              # System design documentation
+├── ROADMAP.md                   # Future development plans
 └── requirements.txt
 ```
 
 ---
 
-## Dependencies
+## Tech Stack
 
-| Package | Purpose |
-|---------|---------|
-| openai | Grok xAI API (Twitter collection + LLM buffer) |
-| feedparser | RSS collection |
-| httpx | HTTP client (Telegram) |
-| vaderSentiment | VADER sentiment analysis |
-| transformers + torch | FinBERT sentiment analysis |
-| PyYAML | Config file parsing |
-| python-dotenv | .env loading |
-| apscheduler | Unified task scheduling |
+| Component | Technology |
+|-----------|-----------|
+| Language | Python 3.11+ |
+| Twitter API | Grok xAI (`x_search`) |
+| RSS parsing | feedparser |
+| Sentiment | VADER + FinBERT (transformers) |
+| LLM analysis | Grok xAI (OpenAI-compatible) |
+| Database | SQLite (3 DBs: twitter, rss, features) |
+| Push | Telegram Bot API (httpx) |
+| Scheduling | APScheduler |
+| Config | YAML + python-dotenv |
 
 ---
 
-## Config Maintenance
+## Configuration
 
-Each YAML config file has embedded LLM maintenance prompts in header comments. Full prompts in `config/prompts.md`.
+All config files use `.example` templates. Copy and customize:
 
-**Workflow**: Copy prompt → attach current config → send to Grok → review suggestions → update YAML
+- **`config/twitter_accounts.yaml`** — Twitter KOL watchlist with per-account weights (1.0–10.0). Groups are auto-discovered.
+- **`config/rss_sources.yaml`** — RSS feed URLs with categories. Add/remove freely.
+- **`config/keywords.yaml`** — Shill blacklist, event keywords (tier 1), topic keywords (tier 2), RSS filter words.
+- **`config/prompts.md`** — LLM prompts for periodic config maintenance (copy prompt → send to Grok → review suggestions → update YAML).
 
 ---
 
 ## Known Limitations
 
 - Grok API cannot fetch reposts/retweets, only original tweets
-- CoinDesk RSS frequently returns 0 items
+- CoinDesk RSS occasionally returns 0 items
 - FinBERT first load downloads ~400MB model
 - LLM prompt JSON `{}` must be escaped as `{{}}` (Python `.format()` conflict)
+
+---
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for planned features including:
+- Web dashboard with sentiment visualization
+- Historical data & backtesting engine
+- Multi-LLM support (Claude, GPT-4)
+- Telegram Bot self-service configuration
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
