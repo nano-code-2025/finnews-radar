@@ -1,0 +1,20 @@
+# ══════════════════════════════════════════════════════════════════
+# FinNews RSS Sources — Example Template
+# Copy to rss_sources.yaml and customize your feeds.
+# ══════════════════════════════════════════════════════════════════
+
+policy:
+  - name: Federal Reserve
+    url: https://www.federalreserve.gov/feeds/press_all.xml
+    category: FED_POLICY
+  - name: SEC Press
+    url: https://www.sec.gov/news/pressreleases.rss
+    category: REGULATION
+
+crypto:
+  - name: CoinDesk
+    url: https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml
+    category: CRYPTO_NEWS
+  - name: Cointelegraph
+    url: https://cointelegraph.com/rss
+    category: CRYPTO_NEWS

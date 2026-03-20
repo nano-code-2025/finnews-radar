@@ -1,0 +1,72 @@
+# ══════════════════════════════════════════════════════════════════
+# FinNews Keywords — Example Template
+# Copy to keywords.yaml and customize your keyword lists.
+# ══════════════════════════════════════════════════════════════════
+
+topics: [regulation, security, etf, macro, defi, market, exchange,
+         geopolitical, memecoin, mining, liquidity, deleveraging, other]
+
+tier1_topic_mapping:
+  security: security
+  regulatory: regulation
+  etf: etf
+  macro_event: macro
+  whale: market
+  institutional: etf
+  exchange: exchange
+  geopolitical: geopolitical
+  money_flow: liquidity
+
+tier2_topic_mapping:
+  crypto: market
+  macro: macro
+  sentiment: market
+
+shill_blacklist:
+  - airdrop
+  - claim now
+  - giveaway
+  - free mint
+
+tier1_event_keywords:
+  security:
+    - hack
+    - exploit
+    - vulnerability
+  regulatory:
+    - SEC
+    - regulation
+    - compliance
+  etf:
+    - ETF
+    - spot ETF
+  macro_event:
+    - FOMC
+    - rate decision
+    - CPI
+
+tier2_topic_keywords:
+  crypto:
+    - bitcoin
+    - ethereum
+    - BTC
+    - ETH
+  macro:
+    - inflation
+    - GDP
+    - unemployment
+  sentiment:
+    - bullish
+    - bearish
+    - fear
+
+rss_keywords:
+  macro:
+    - Federal Reserve
+    - interest rate
+  regulation:
+    - SEC
+    - CFTC
+  crypto:
+    - bitcoin
+    - ethereum

@@ -1,0 +1,28 @@
+# ══════════════════════════════════════════════════════════════════
+# FinNews Twitter Accounts — Example Template
+# Copy to twitter_accounts.yaml and fill in your own accounts.
+# ══════════════════════════════════════════════════════════════════
+#
+# Format: - handle: weight   (weight 1.0-10.0)
+# Groups are auto-discovered by collector.py — no code changes needed.
+
+# Example: Market Data & Volatility
+market_data:
+  interval_minutes: 20
+  accounts:
+    - example_analyst: 9.0
+    - example_data_provider: 8.5
+
+# Example: Risk Monitoring
+risk_monitoring:
+  interval_minutes: 30
+  accounts:
+    - example_security: 10.0
+    - example_onchain: 9.5
+
+# Example: Macro & Narrative
+macro_narrative:
+  interval_minutes: 120
+  accounts:
+    - example_macro: 8.5
+    - example_news: 8.0
