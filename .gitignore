@@ -9,22 +9,7 @@ __pycache__/
 
 # Data
 data/
-*.db
-output.csv
 
 # IDE
 .vscode/
 .idea/
-
-# Config (real data — only .example templates are tracked)
-config/twitter_accounts.yaml
-config/rss_sources.yaml
-config/keywords.yaml
-config/rss_sources.test.yaml
-
-# Docs (internal)
-docs/
-
-# Internal
-.claude/
-*.bak
